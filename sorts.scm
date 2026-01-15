@@ -44,11 +44,12 @@
 ;;; \Theta(nlogn)
 ;; merge-sort
 (define merge-sort
-  (letrec ((split (lambda (s c o f)
-                    (if (null? s)
-                        (f c o)
-                        (with s (lambda (a . s)
-                                  (split s o `(,a ,@c) f))))))
+  (letrec ((split (lambda (s f)
+                    (if (or (null? s) (null? (cdr s)))
+                        (f s '())
+                        (with s (lambda (a b . s)
+                                  (split s (lambda (s1 s2)
+                                             (f (cons a s1) (cons b s2)))))))))
            (merge (lambda (s1 s2)
                     (cond ((null? s1) s2)
                           ((null? s2) s1)
@@ -60,25 +61,27 @@
            (msort (lambda (s)
                     (if (or (null? s) (null? (cdr s)))
                         s
-                        (split s '() '() (lambda (s1 s2)
-                                           (merge (msort s1) (msort s2))))))))
+                        (split s (lambda (s1 s2)
+                                   (merge (msort s1) (msort s2))))))))
     msort
     ))
 
 ;; quick-sort
 (define quick-sort
-  (letrec ((split-by-pivot (lambda (p s lt gt f)
+  (letrec ((split-by-pivot (lambda (p s f)
                              (if (null? s)
-                                 (f lt gt)
+                                 (f '() '())
                                  (with s (lambda (a . s)
                                            (if (< a p)
-                                               (split-by-pivot p s (cons a lt) gt f)
-                                               (split-by-pivot p s lt (cons a gt) f)))))))
+                                               (split-by-pivot p s (lambda (lt gt)
+                                                                     (f (cons a lt) gt)))
+                                               (split-by-pivot p s (lambda (lt gt)
+                                                                     (f lt (cons a gt))))))))))
            (qsort (lambda (s)
                     (if (null? s)
                         s
                         (with s (lambda (p . s)
-                                  (split-by-pivot p s '() '() (lambda (lt gt)
-                                                                `(,@(qsort lt) ,p ,@(qsort gt))))))))))
+                                  (split-by-pivot p s (lambda (lt gt) 
+                                                        `(,@(qsort lt) ,p ,@(qsort gt))))))))))
     qsort
     ))
