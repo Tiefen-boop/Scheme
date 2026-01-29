@@ -85,3 +85,32 @@
                                                         `(,@(qsort lt) ,p ,@(qsort gt))))))))))
     qsort
     ))
+
+
+;;; non-comparing sorts
+;; counting-sort
+(define counting-sort
+  (letrec ((add-to-histogram (lambda (n hist)
+                               (if (zero? n)
+                                   (if (null? hist)
+                                       '(1)
+                                       (with hist (lambda (curr . rest)
+                                                    (cons (+ curr 1) rest))))
+                                   (if (null? hist)
+                                       (cons 0 (add-to-histogram (- n 1) '()))
+                                       (with hist (lambda (curr . rest)
+                                                    (cons curr (add-to-histogram (- n 1) rest))))))))
+           (sorted-from-histogram (lambda (i hist)
+                                    (if (null? hist)
+                                        '()
+                                        (with hist (lambda (curr . rest)
+                                                     (if (zero? curr)
+                                                         (sorted-from-histogram (+ i 1) rest)
+                                                         (cons i (sorted-from-histogram i (cons (- curr 1) rest)))))))))
+           (c-sort (lambda (s hist)
+                     (if (null? s)
+                         (sorted-from-histogram 0 hist)
+                         (with s (lambda (a . s)
+                                   (c-sort s (add-to-histogram a hist))))))))
+    (lambda (s) (c-sort s '()))))
+
