@@ -59,6 +59,23 @@
                                                     (max-sort s (cons max sorted))))))))))
     (lambda (s) (max-sort s '()))))
 
+;; selection-sort
+(define selection-sort
+  (letrec ((select (lambda (s f)
+                     (if (null? (cdr s))
+                         (f (car s) '())
+                         (with s (lambda (a . s)
+                                   (select s (lambda (m s)
+                                               (if (< m a)
+                                                   (f m (cons a s))
+                                                   (f a (cons m s))))))))))
+           (ssort (lambda (sorted s)
+                    (if (null? s)
+                        sorted
+                        (select s (lambda (m s)
+                                    (ssort `(,@sorted ,m) s)))))))
+    (lambda (s) (ssort '() s))))
+
 ;;; \Theta(nlogn)
 ;; merge-sort
 (define merge-sort
