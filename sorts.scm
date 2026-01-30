@@ -1,7 +1,7 @@
 ;; util
 (define with (lambda (s f) (apply f s)))
 
-;;; \Theta(n^2) 
+;;; \Theta(n^2)  ---  at least imperatively
 ;; bubble-sort
 (define bubble-sort
   (letrec ((bub (lambda (a b . s)                  
@@ -21,6 +21,24 @@
            )
     (lambda (s) (bubble-sort s (length s)))
     ))
+
+;; insertion-srot
+(define insertion-sort
+  (letrec ((insert (lambda (n sorted f)
+                     (if (null? sorted)
+                         (apply f `(,n))
+                         (with sorted (lambda (a . rest)
+                                        (insert n rest (lambda (n . rest)
+                                                         (if (< n a)
+                                                             (apply f `(,n ,a ,@rest))
+                                                             (apply f `(,a ,n ,@rest))))))))))
+           (isort (lambda (sorted s)
+                    (if (null? s)
+                        sorted
+                        (with s (lambda (n . s)
+                                  (insert n sorted (lambda sorted
+                                                     (isort sorted s)))))))))
+    (lambda (s) (isort '() s))))
 
 ;; max-sort
 (define max-sort
